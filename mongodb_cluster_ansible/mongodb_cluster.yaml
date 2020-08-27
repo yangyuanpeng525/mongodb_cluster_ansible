@@ -1,0 +1,100 @@
+---
+- name: "___全新安装Mangodb集群___"
+  hosts: "{{ group_mongodb }}"
+  gather_facts: true 
+  remote_user: root
+#  vars_files:
+#    - "./vars/env.yaml"
+  pre_tasks:
+    - debug:
+        msg: "{{ inventory_hostname }}服务器开始安装Mangodb."
+  roles:
+    - role: install_Mangodb
+  post_tasks:
+    - debug:
+        msg: "{{ inventory_hostname }}服务器上的Mangodb安装完成。"
+  tags: install_Mangodb
+ 
+- name: "___配置Config_server___"
+  hosts: "{{ group_mongodb }}"
+  gather_facts: true
+  remote_user: root
+#  vars_files:
+#    - "./vars/env.yaml"
+  pre_tasks:
+    - debug:
+        msg: "{{ inventory_hostname }}服务器开始配置Config_server。"
+  roles: 
+    - role: config_server
+  post_tasks:
+    - debug:
+        msg: "{{ inventory_hostname }}服务器完成Config_server的配置。"
+  tags: config_server
+
+- name: "___配置配置分片副本集___"
+  hosts: "{{ group_mongodb }}"
+  gather_facts: true
+  remote_user: root
+#  vars_files:
+#    - "./vars/env.yaml"
+  pre_tasks:
+    - debug:
+        msg: "{{ inventory_hostname }}服务器开始配置分片副本集。"
+  roles: 
+    - role: shard
+  post_tasks:
+    - debug:
+        msg: "{{ inventory_hostname }}服务器完成分片副本集的配置。"
+  tags: shard
+
+- name: "___配置路由服务器mongos___"
+  hosts: "{{ group_mongodb }}"
+  gather_facts: true
+  remote_user: root
+#  vars_files:
+#    - "./vars/env.yaml"
+  pre_tasks:
+    - debug:
+        msg: "{{ inventory_hostname }}服务器开始配置路由服务器mongos。"
+  roles: 
+    - role: mongos
+  post_tasks:
+    - debug:
+        msg: "{{ inventory_hostname }}服务器完成路由服务器mongos的配置。"
+  tags: mongos
+
+- name: "___串联所有分片和路由器___"
+  hosts: "{{ group_mongodb }}"
+  gather_facts: true
+  remote_user: root
+#  vars_files:
+#    - "./vars/env.yaml"
+  pre_tasks:
+    - debug:
+        msg: "{{ inventory_hostname }}服务器开始串联所有分片和路由器。"
+  roles: 
+    - role: laststep
+  post_tasks:
+    - debug:
+        msg: "{{ inventory_hostname }}服务器完成串联所有分片和路由器。"
+  tags: laststep
+
+- name: "___创建超级用户___"
+  hosts: "{{ group_mongodb }}"
+  gather_facts: true
+  remote_user: root
+#  vars_files:
+#    - "./vars/env.yaml"
+  pre_tasks:
+    - debug:
+        msg: "{{ inventory_hostname }}服务器开始创建超级用户。"
+  roles:
+    - role: adduser
+  post_tasks:
+    - debug:
+        msg: "{{ inventory_hostname }}服务器完成创建超级用户。"
+    - debug:
+        msg: "!!!!登录{{ inventory_hostname }}Mongodb集群数据库：mongo -port {{ MongosPort }} -u {{ User }}  -p {{ Password }} --authenticationDatabase 'admin' ,然后执行:sh.status()查看集群状态!!!!！"
+  tags: adduser
+
+

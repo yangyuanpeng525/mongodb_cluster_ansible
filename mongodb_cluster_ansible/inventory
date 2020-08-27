@@ -1,0 +1,56 @@
+#需要安装docker的机器
+#docker组会自动进行系统初始化,jdk1.8，docker-19.3 docker-1.25.0安装部署
+[docker]
+192.168.118.211:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin 
+192.168.118.212:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin 
+192.168.118.213:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin 
+# rabbitmq集群主机组
+[rabbitmq-cluster]
+192.168.118.211:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin mqhostname=mq1 ismaster=true
+192.168.118.212:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin mqhostname=mq2 ismaster=false
+192.168.118.213:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin mqhostname=mq3 ismaster=false
+#redis哨兵集群
+[redis-master]
+192.168.118.211:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin 
+[redis-slave]
+192.168.118.212:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin
+192.168.118.213:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin
+
+
+#mariadb galera集群
+[pxc]
+192.168.118.211:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin 
+192.168.118.212:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin 
+192.168.118.213:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin 
+# nginx集群
+[nginx]
+192.168.118.211:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin 
+192.168.118.212:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin 
+192.168.118.213:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin 
+
+[kafka]
+192.168.118.211:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin 
+192.168.118.212:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin 
+192.168.118.213:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin 
+#默认三台服务器的顺序：dc_01、dc_02、sp_db_slave
+##默认执行组为[Mongodb]，组名不可修改
+[Mongodb1]
+192.168.118.211:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin 
+192.168.118.212:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin 
+192.168.118.213:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin
+[Mongodb]
+192.168.200.90
+192.168.200.91
+192.168.200.92
+
+#采编模块
+##ddc分发中心
+[ddc]
+192.168.118.211:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin 
+192.168.118.212:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin 
+192.168.118.213:1022 ansible_ssh_user=root ansible_ssh_pass=cdtrs@910jqk.trsadmin
+[all:vars]
+MinMemSize=50
+MinCPUCore=1
+MinDiskSize=3
+MinDiskIOSpeed=99
