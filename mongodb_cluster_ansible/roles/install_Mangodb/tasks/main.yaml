@@ -1,0 +1,144 @@
+---
+#tasks file for install_Mongodb
+- name: ___永久禁用selinux___
+  selinux:
+    state: disabled
+
+- name: ___临时禁用selinux___
+  shell: setenforce 0
+  args:
+    executable: /bin/bash
+  ignore_errors: yes
+  failed_when: false
+
+- name: ___判断防火墙是否打开___
+  shell: systemctl is-active firewalld
+  ignore_errors: True  #忽略错误，可以继续执行
+  register: check_firewalld     #将上面shell的结果赋值给check_firewalld变量
+
+- name: ___当前防火墙状态___
+  debug: msg={{ check_firewalld.stdout }}
+#  debug: msg={{ check_firewalld }}
+
+- name: ___开启防火墙端口___
+  firewalld:
+    port: "{{ item }}/tcp"
+    permanent: yes
+    immediate: yes
+    state: enabled  
+  when:  check_firewalld.stdout == "active"
+  with_items:
+    - "{{ MongosPort }}"
+    - "{{ ConfigPort }}"
+    - "{{ Shard1Port }}"
+    - "{{ Shard2Port }}"
+    - "{{ Shard3Port }}"
+#  register: add_port_firewalld
+
+#- name: ___判断添加端口状态___
+#  debug: 
+#    msg: "{{ inventory_hostname }}添加端口状态：{{ add_port_firewalld .results}}"
+#
+- name: ___删除Mongodb相关目录___
+  shell: "rm -rf {{ File13 }} {{ File14 }} {{ File15 }} {{ Rpmtmp }} {{ Init }} {{ Config_Server_File }}"
+  ignore_errors: true
+
+- name: ___创建Mongodb相关目录___
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0777
+  with_items:
+    - "{{ File1 }}"
+    - "{{ File2 }}"
+    - "{{ File3 }}"
+    - "{{ File4 }}"
+    - "{{ File5 }}"
+    - "{{ File6 }}"
+    - "{{ File7 }}"
+    - "{{ File8 }}"
+    - "{{ File9 }}"
+    - "{{ File10 }}"
+    - "{{ File11 }}"
+    - "{{ File12 }}"
+    - "{{ Config_Server_File }}"
+    - "{{ Rpmtmp }}"
+    - "{{ Init }}"
+
+
+- name: ___是否YUM在线安装___
+  debug: 
+    msg: "true为在线YUM安装，false为本地rpm包安装，本次安装方式:{{ InstallMode }}"
+#- name: ___rpmtmp___
+#  debug: 
+#    msg: "{{ Rpmtmp }}"
+
+- name: ___拷贝rpm包___
+  copy:
+    src: "./rpm/{{ MongodbVersion }}.tar.gz"
+    dest: "/tmp"
+  when:  InstallMode  == false
+
+- name: ___清理安装目录___
+  shell: "rm -rf {{ Rpmtmp }}/*"
+  ignore_errors: true
+  when:  InstallMode  == false
+
+- name: 解压安装包
+  unarchive:
+    src: "/tmp/{{ MongodbVersion }}.tar.gz"
+    dest: "{{ Rpmtmp }}"
+    copy: no
+  when:  InstallMode  == false
+
+- name: ___卸载原有mongodb包___
+  shell: "rpm -e mongodb-org; rpm -e mongodb-org-mongos; rpm -e mongodb-org-shell; rpm -e mongodb-org-tools;rpm -e mongodb-org-server"
+  ignore_errors: true
+  when:  InstallMode  == false
+
+- name: ___rpm安装mongodb___
+  shell: "rpm -ivh mongodb-org-*"
+  args:
+    chdir: "{{ Rpmtmp }}"
+  when:  InstallMode  == false
+
+- name: ___声明版本号___
+  debug: 
+    msg: "{{ MongodbVersion }}"
+  when:  InstallMode  == false
+
+
+- name: ___删除原有的YUM源---mongodb-org.repo___
+  file:
+    path: /etc/yum.repos.d/mongodb-org.repo
+    state: absent
+  when: InstallMode == true
+
+- name: ___准备Mangodb的YUM源___
+  copy:
+    src: "./templates/mongodb_yum.j2"
+    dest: "/etc/yum.repos.d/mongodb-org.repo"
+    mode: '0777'
+    force: yes
+  when: InstallMode == true
+
+- name: ___清理YUM缓存___
+  shell: "yum clean all && yum repolist"
+  when: InstallMode == true
+#  shell: 
+#    - "yum clean all"
+#    - "yum repolist"
+  ignore_errors: yes
+
+- name: ___YUM安装Mongodb___
+  yum:
+    name: mongodb-org
+    state: latest
+  when: InstallMode == true
+
+- name: ___kill原有Mongodb所有进程___
+  shell: "pkill mongo"
+  ignore_errors: true
+- name: ___kill原有Mongodb所有进程___
+  shell: "pkill mongo"
+  ignore_errors: true
