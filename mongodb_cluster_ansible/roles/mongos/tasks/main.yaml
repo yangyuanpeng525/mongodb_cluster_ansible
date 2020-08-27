@@ -1,0 +1,40 @@
+---
+- name: ___永久禁用selinux___
+  selinux:
+    state: disabled
+
+- name: ___临时禁用selinux___
+  shell: setenforce 0
+  args:
+    executable: /bin/bash
+  ignore_errors: yes
+  failed_when: false
+
+- name: ___判断防火墙是否打开___
+  shell: systemctl is-active firewalld
+  ignore_errors: True  #忽略错误，可以继续执行
+  register: check_firewalld     #将上面shell的结果赋值给check_firewalld变量
+
+- name: ___当前防火墙状态___
+  debug: msg={{ check_firewalld.stdout }}
+
+- name: ___准备mongos配置文件___
+  template:
+    src: "./mongos.conf.j2"
+    dest: "{{ Config_Server_File }}/mongos.conf"
+    mode: 0755
+
+- name: ___传递query_kill_mongos.sh____
+  copy:
+    src: "./templates/query_kill_mongos.js"
+    dest: "{{ Init }}/query_kill_mongos.sh"
+    mode: '0777'
+    force: yes
+
+- name: ___杀进程mongos___
+  shell: "bash {{ Init }}/query_kill_mongos.sh"
+  ignore_errors: true
+
+- name: ___启动mongos___
+  shell: "mongos -f {{ Config_Server_File }}/mongos.conf"
+

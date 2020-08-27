@@ -1,0 +1,92 @@
+---
+- name: ___传输创建超级用户脚本___
+  template:
+    src: "./templates/adduser.j2"
+    dest: "{{ Init }}/adduser_init"
+    mode: '0777'
+    force: yes
+  when: " hostvars[inventory_hostname]  == hostvars[groups.Mongodb[0]] "
+
+- name: ___创建超级用户___
+  shell: "mongo --port {{ MongosPort }} < {{ Init }}/adduser_init"
+  when: " hostvars[inventory_hostname]  == hostvars[groups.Mongodb[0]] "
+  ignore_errors: true
+
+- name: ___清理Key文件夹___
+  shell: "rm -rf {{ KeyFile }}"
+
+- name: ___创建Key文件夹___
+  file:
+    path: "{{ KeyFile }}"
+    state: directory
+    mode: 0777
+
+#- name: ___生成验证文件___
+#  shell: "openssl rand -base64 753 > security.key && chmod 600 security.key"
+#  args:
+#    chdir: "{{ KeyFile }}"
+#  when: " hostvars[inventory_hostname]  == hostvars[groups.Mongodb[0]] "
+
+- name: ___传输验证文件___
+  copy:
+    src: "./templates/security.key"
+    dest: "{{ KeyFile }}"
+    mode: 0600
+
+#- name: ___添加配置___
+#  shell: "grep -e '^keyFile=' {{ KeyFile }}/{{ item }} || echo 'keyFile={{ KeyFile }}/security.key' >> {{ item }}"
+#  with_items:
+#    - "{{ Config_Server_File}}/config.conf"
+#    - "{{ Config_Server_File}}/shard1.conf"
+#    - "{{ Config_Server_File}}/shard2.conf"
+#    - "{{ Config_Server_File}}/shard3.conf"
+#    - "{{ Config_Server_File}}/mongos.conf"
+#- name: ___test___
+#  debug:
+#    msg: "grep -e '^keyFile='  {{ Config_Server_File}}/{{ item }} || echo 'keyFile={{ KeyFile }}/security.key' >> {{ Config_Server_File}}/{{ item }}"
+#  with_items:
+#    - "config.conf"
+#    - "shard1.conf"
+#    - "shard2.conf"
+#    - "shard3.conf"
+#    - "mongos.conf"
+   
+- name: ___添加配置___
+  shell: "grep -e '^keyFile='  {{ Config_Server_File}}/{{ item }} || echo 'keyFile={{ KeyFile }}/security.key' >> {{ Config_Server_File}}/{{ item }}"
+  with_items:
+    - "config.conf"
+    - "shard1.conf"
+    - "shard2.conf"
+    - "shard3.conf"
+    - "mongos.conf"
+
+  
+- name: ___kill所有mongo进程___
+  shell: "pkill mongo"
+  ignore_errors: true
+- name: ___kill所有mongo进程___
+  shell: "pkill mongo"
+  ignore_errors: true
+- name: ___kill所有mongo进程___
+  shell: "pkill mongo"
+  ignore_errors: true
+- name: ___kill所有mongo进程___
+  shell: "pkill mongo"
+  ignore_errors: true
+
+- name: ___重启config_server进程___
+  shell: "mongod -f {{ Config_Server_File }}/config.conf"
+
+- name: ___重启shard进程___
+  shell: "mongod -f {{ Config_Server_File }}/{{ item }}"
+  with_items:
+    - "shard1.conf"
+    - "shard2.conf"
+    - "shard3.conf"
+
+- name: ___重启所有mongos进程___
+  shell: "mongos -f {{ Config_Server_File }}/mongos.conf"
+
+#- name: ___登录提示___
+#  debug: 
+#    msg: "登录Mongodb数据库：mongo -port {{ MongosPort }} -u {{ User }}  -p {{ Password }} --authenticationDatabase 'admin'"

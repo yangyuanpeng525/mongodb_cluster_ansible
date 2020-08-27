@@ -1,0 +1,2 @@
+config={ _id : "configs", members : [ {_id : 0, host : "{{ groups.Mongodb[0] }}:{{ ConfigPort }}" }, {_id : 1, host : "{{ groups.Mongodb[1] }}:{{ ConfigPort }}" }, {_id : 2, host : "{{ groups.Mongodb[2] }}:{{ ConfigPort }}" } ] }
+rs.initiate(config)

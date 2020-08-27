@@ -1,0 +1,3 @@
+use admin
+config={ _id : "shard2", members : [ {_id : 0, host : "{{ groups.Mongodb[0] }}:{{ Shard2Port }}",arbiterOnly : true }, {_id : 1, host : "{{ groups.Mongodb[1] }}:{{ Shard2Port }}" }, {_id : 2, host : "{{ groups.Mongodb[2] }}:{{ Shard2Port }}" } ] }
+rs.initiate(config)

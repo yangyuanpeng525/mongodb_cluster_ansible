@@ -1,0 +1,101 @@
+---
+#tasks file for shard1、shard2、shard3
+- name: ___永久禁用selinux___
+  selinux:
+    state: disabled
+
+- name: ___临时禁用selinux___
+  shell: setenforce 0
+  args:
+    executable: /bin/bash
+  ignore_errors: yes
+  failed_when: false
+
+- name: ___判断防火墙是否打开___
+  shell: systemctl is-active firewalld
+  ignore_errors: True  #忽略错误，可以继续执行
+  register: check_firewalld     #将上面shell的结果赋值给check_firewalld变量
+
+- name: ___当前防火墙状态___
+  debug: msg={{ check_firewalld.stdout }}
+#  debug: msg={{ check_firewalld }}
+
+- name: ___准备shard1、shard2、shard3配置文件___
+  template:
+    src: "{{ item }}"
+    dest: "{{ Config_Server_File }}/"
+    mode: '0755'
+    force: yes
+  with_items: 
+    - "./templates/shard1.conf"
+    - "./templates/shard2.conf"
+    - "./templates/shard3.conf"
+- name: ___传递query_kill_shard.sh____
+  copy:
+    src: "./templates/query_kill_shard.j2"
+    dest: "{{ Init }}/query_kill_shard.sh"
+    mode: '0777'
+    force: yes
+
+- name: ___杀进程shard1、shard2、shard3___
+  shell: "bash {{ Init }}/query_kill_shard.sh"
+  ignore_errors: true
+
+- name: ___启动shard1、shard2、shard3___
+  shell: "mongod -f {{ item }}"
+  with_items:
+    - "{{ Config_Server_File }}/shard1.conf"
+    - "{{ Config_Server_File }}/shard2.conf"
+    - "{{ Config_Server_File }}/shard3.conf"
+
+- name: ___输出shard1的初始化配置config信息___
+  run_once: true
+  debug: 
+     msg: "shard1的初始化配置config信息:{{ Config1 }}"
+- name: ___输出shard2的初始化配置config信息___
+  run_once: true
+  debug:
+     msg: "shard2的初始化配置config信息:{{ Config2 }}"
+- name: ___输出shard3的初始化配置config信息___
+  run_once: true
+  debug:
+     msg: "shard3的初始化配置config信息:{{ Config3 }}"
+ 
+- name: ___准备shard1、shard3的初始化配置config信息___ 
+  template:
+    src: "{{ item }}"
+    dest: "{{ Init }}/"
+    mode: 0755
+  with_items:
+    - "./templates/shard1_init"
+    - "./templates/shard3_init"
+  when: " hostvars[inventory_hostname]  == hostvars[groups.Mongodb[0]] "
+
+- name: ___准备shard2的初始化配置config信息___
+  template:
+    src: "{{ item }}"
+    dest: "{{ Init }}/"
+    mode: 0755
+  with_items:
+    - "./templates/shard2_init"
+  when: " hostvars[inventory_hostname]  == hostvars[groups.Mongodb[1]] "
+
+
+- name: ___初始化shard1___
+  shell: "mongo --port {{ Shard1Port }} < {{ item }}"
+  with_items:
+    - "{{ Init }}/shard1_init"
+  when: " hostvars[inventory_hostname]  == hostvars[groups.Mongodb[0]] "
+
+- name: ___初始化shard2___
+  shell: "mongo --port {{ Shard2Port }} < {{ item }}"
+  with_items:
+    - "{{ Init }}/shard2_init"
+  when: " hostvars[inventory_hostname]  == hostvars[groups.Mongodb[1]] "
+
+- name: ___初始化shard3___
+  shell: "mongo --port {{ Shard3Port }} < {{ item }}"
+  with_items:
+    - "{{ Init }}/shard3_init"
+  when: " hostvars[inventory_hostname]  == hostvars[groups.Mongodb[0]] "
+

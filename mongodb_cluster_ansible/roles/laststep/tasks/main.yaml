@@ -1,0 +1,31 @@
+---
+#tasks file for 串联所有分片和路由器
+- name: ___永久禁用selinux___
+  selinux:
+    state: disabled
+
+- name: ___临时禁用selinux___
+  shell: setenforce 0
+  args:
+    executable: /bin/bash
+  ignore_errors: yes
+  failed_when: false
+
+- name: ___判断防火墙是否打开___
+  shell: systemctl is-active firewalld
+  ignore_errors: True  #忽略错误，可以继续执行
+  register: check_firewalld     #将上面shell的结果赋值给check_firewalld变量
+
+- name: ___当前防火墙状态___
+  debug: msg={{ check_firewalld.stdout }}
+
+- name: ___传递串联所有分片和路由器的脚本___
+  template:
+    src: "./templates/laststep.j2"
+    dest: "{{ Init }}/laststep_init"
+    mode: 0755
+  when: " hostvars[inventory_hostname]  == hostvars[groups.Mongodb[0]] "
+ 
+- name: ___串联所有分片和路由器___
+  shell: "mongo --port {{ MongosPort }} <  {{ Init }}/laststep_init"
+  when: " hostvars[inventory_hostname]  == hostvars[groups.Mongodb[0]] "

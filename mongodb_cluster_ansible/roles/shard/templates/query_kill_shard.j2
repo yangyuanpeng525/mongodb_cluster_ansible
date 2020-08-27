@@ -1,0 +1,11 @@
+#!/bin/bash
+PIDS=`ps aux | grep  "{{ Config_Server_File }}"/shard | grep -v 'grep'  | awk '{print $2}'`
+echo $PIDS > /tmp/shard_tmp.txt
+#echo $PIDS
+for i in `cat /tmp/shard_tmp.txt`
+do
+let b++
+echo "shard$b的PID是：$i"
+kill -9 $i
+done
+rm -rf /tmp/shard_tmp.txt

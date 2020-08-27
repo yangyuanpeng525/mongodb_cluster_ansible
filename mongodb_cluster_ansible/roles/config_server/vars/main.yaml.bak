@@ -1,0 +1,5 @@
+---
+#vars file for configserver
+#Config: { _id : "configs", members : [ {_id : 0, host : "192.168.200.90:{{ ConfigPort }}" }, {_id : 1, host : "192.168.200.91:{{ ConfigPort }}" }, {_id : 2, host : "192.168.200.92:{{ ConfigPort }}" } ] }
+
+Config: { _id : "configs", members : [ {_id : 0, host : "{{ groups.Mongodb[0] }}:{{ ConfigPort }}" }, {_id : 1, host : "{{ groups.Mongodb[1] }}:{{ ConfigPort }}" }, {_id : 2, host : "{{ groups.Mongodb[2] }}:{{ ConfigPort }}" } ] }

@@ -1,0 +1,8 @@
+pidfilepath = /var/run/mongodb/mongos.pid
+logpath = {{ File1 }}/mongos.log
+logappend = true
+bind_ip = 0.0.0.0
+port = {{ MongosPort }}
+fork = true
+configdb = configs/{{ groups.Mongodb[0] }}:{{ ConfigPort }}, {{ groups.Mongodb[1] }}:{{ ConfigPort }}, {{ groups.Mongodb[2] }}:{{ ConfigPort }} #监听的配置服务器,只能有1个或者3个，configs为配置服务器的副本集名字
+maxConns=20000 #设置最大连接数

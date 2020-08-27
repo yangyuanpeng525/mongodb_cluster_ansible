@@ -1,0 +1,77 @@
+---
+#tasks file for config server
+- name: ___永久禁用selinux___
+  selinux:
+    state: disabled
+
+- name: ___临时禁用selinux___
+  shell: setenforce 0
+  args:
+    executable: /bin/bash
+  ignore_errors: yes
+  failed_when: false
+
+- name: ___判断防火墙是否打开___
+  shell: systemctl is-active firewalld
+  ignore_errors: True  #忽略错误，可以继续执行
+  register: check_firewalld     #将上面shell的结果赋值给check_firewalld变量
+
+- name: ___当前防火墙状态___
+  debug: msg={{ check_firewalld.stdout }}
+#  debug: msg={{ check_firewalld }}
+
+- name: ___创建config_server相关目录___
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0777
+    force: yes
+  with_items:
+    - "{{ Config_Server_File }}"
+
+- name: ___准备config_server的配置文件___
+  template:
+    src: "./templates/config_server.j2"
+    dest: "{{ Config_Server_File }}/config.conf"
+    mode: '0777'
+    force: yes
+
+- name: ___传递query_kill.sh____
+  template:
+    src: "./templates/query_kill.j2"
+    dest: "{{ Init }}/query_kill.sh"
+    mode: '0777'
+    force: yes
+
+- name: ___杀进程config_server___
+  shell: "bash {{ Init }}/query_kill.sh"
+  ignore_errors: true
+#- name: ___杀进程config_server___
+#  shell: "ps aux | grep  /etc/mongod/config.conf | awk 'NR==1 {print $2}'"
+#  register: config_server_old_pid 
+#- name: jkbjbjl
+#  debug: "{{ config_server_old_pid.stdout }}"
+
+- name: ___启动config_server服务___
+  shell: "mongod -f {{ Config_Server_File }}/config.conf"
+  ignore_errors: true 
+
+- name: ___设置config变量___
+  debug:
+    msg: "设置config变量。" 
+
+- name: ___输出config变量___
+  debug:
+    msg: "{{ Config }}"
+
+- name: ___传递初始化副本集脚本mongodb_init___
+  template:
+    src: "./templates/mongodb_init.j2"
+    dest: "{{ Init }}/mongodb_init"
+    mode: '0777'
+  when: " hostvars[inventory_hostname]  == hostvars[groups.Mongodb[0]] "
+
+- name: ___初始化副本集____
+  shell: "mongo --port {{ ConfigPort }} < {{ Init }}/mongodb_init"
+  when: " hostvars[inventory_hostname]  == hostvars[groups.Mongodb[0]] "
+

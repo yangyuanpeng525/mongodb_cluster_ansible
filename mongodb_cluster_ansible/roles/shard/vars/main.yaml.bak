@@ -1,0 +1,7 @@
+---
+#vars file for shard1、shard2、shard3
+Config1: { _id : "shard1", members : [ {_id : 0, host : "{{ groups.Mongodb[0] }}:{{ Shard1Port }}" }, {_id : 1, host : "{{ groups.Mongodb[1] }}:{{ Shard1Port }}" }, {_id : 2, host : "{{ groups.Mongodb[2] }}:{{ Shard1Port }}",arbiterOnly : true } ] }
+Config2: { _id : "shard2", members : [ {_id : 0, host : "{{ groups.Mongodb[0] }}:{{ Shard2Port }}",arbiterOnly : true }, {_id : 1, host : "{{ groups.Mongodb[1] }}:{{ Shard2Port }}" }, {_id : 2, host : "{{ groups.Mongodb[2] }}:{{ Shard2Port }}" } ] }
+Config3: { _id : "shard3", members : [ {_id : 0, host : "{{ groups.Mongodb[0] }}:{{ Shard3Port }}" }, {_id : 1, host : "{{ groups.Mongodb[1] }}:{{ Shard3Port }}",arbiterOnly : true }, {_id : 2, host : "{{ groups.Mongodb[2] }}:{{ Shard3Port }}" } ] }
+
+

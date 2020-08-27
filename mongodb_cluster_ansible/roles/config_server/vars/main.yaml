@@ -1,0 +1,49 @@
+---
+#vars file for install_Mangodb
+#定义安装组
+group_mongodb: Mongodb
+#定义安装方式：true为在线yum源安装，false为本地rpm包安装，默认为本地安装
+#InstallMode: true
+InstallMode: false
+#安装版本
+MongodbVersion: mongodb-org-3.4.24
+#安装Mongodb相关目录：
+File1: "/TRS/LOGS/mongodb/mongos/log"
+File2: "/TRS/CONFIG/mongodb/config/data"
+File3: "/TRS/CONFIG/mongodb/config/log"
+File4: "/TRS/DATA/mongodb/shard1/data"
+File5: "/TRS/DATA/mongodb/shard1/log"
+File6: "/TRS/DATA/mongodb/shard2/data"
+File7: "/TRS/DATA/mongodb/shard2/log"
+File8: "/TRS/DATA/mongodb/shard3/data"
+File9: "/TRS/DATA/mongodb/shard3/log"
+File10: "/TRS/LOGS/mongodb/shard1/log"
+File11: "/TRS/LOGS/mongodb/shard2/log"
+File12: "/TRS/LOGS/mongodb/shard3/log"
+File13: "/TRS/LOGS"
+File14: "/TRS/CONFIG"
+File15: "/TRS/DATA"
+#相关端口
+MongosPort: 20000
+ConfigPort: 21000
+Shard1Port: 27001
+Shard2Port: 27002
+Shard3Port: 27003
+#配置congfig_server相关目录
+Config_Server_File: "/etc/mongod"
+#本地安装rpm解压目录
+Rpmtmp: "/TRS/rpmtmp"
+#初始化脚本
+Init: "/tmp/init"
+
+#创建超级用户
+User: admin
+Password: admin123
+#Key file
+KeyFile: "/TRS/DATA/mongodb/key"
+
+
+#vars file for configserver
+#Config: { _id : "configs", members : [ {_id : 0, host : "192.168.200.90:{{ ConfigPort }}" }, {_id : 1, host : "192.168.200.91:{{ ConfigPort }}" }, {_id : 2, host : "192.168.200.92:{{ ConfigPort }}" } ] }
+
+Config: { _id : "configs", members : [ {_id : 0, host : "{{ groups.Mongodb[0] }}:{{ ConfigPort }}" }, {_id : 1, host : "{{ groups.Mongodb[1] }}:{{ ConfigPort }}" }, {_id : 2, host : "{{ groups.Mongodb[2] }}:{{ ConfigPort }}" } ] }

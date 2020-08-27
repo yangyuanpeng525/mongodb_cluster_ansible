@@ -1,0 +1,4 @@
+sh.addShard("shard1/{{ groups.Mongodb[0] }}:{{ Shard1Port }},{{ groups.Mongodb[1] }}:{{ Shard1Port }},{{ groups.Mongodb[2] }}:{{ Shard1Port }}")
+sh.addShard("shard2/{{ groups.Mongodb[0] }}:{{ Shard2Port }},{{ groups.Mongodb[1] }}:{{ Shard2Port }},{{ groups.Mongodb[2] }}:{{ Shard2Port }}")
+sh.addShard("shard3/{{ groups.Mongodb[0] }}:{{ Shard3Port }},{{ groups.Mongodb[1] }}:{{ Shard3Port }},{{ groups.Mongodb[2] }}:{{ Shard3Port }}")
+sh.status()
